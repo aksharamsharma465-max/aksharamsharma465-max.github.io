@@ -65,9 +65,9 @@
     <div class="group">
     <article class="project vertical">
       <div class="frame">
-        <video controls playsinline preload="metadata"
+        <video controls playsinline 
                poster="media/creator-reel-poster.jpg"
-               src="videos/creator-quality-reel.mp4"
+               data-parts="creator-quality-reel.mp4:4" preload="none"
                width="720" height="1280"></video>
       </div>
       <div class="meta">
@@ -86,9 +86,9 @@
 
     <article class="project vertical">
       <div class="frame">
-        <video controls playsinline preload="metadata"
+        <video controls playsinline 
                poster="media/hello-jewellery-poster.jpg"
-               src="videos/hello-jewellery-reel.mp4"
+               data-parts="hello-jewellery-reel.mp4:4" preload="none"
                width="720" height="1280"></video>
       </div>
       <div class="meta">
@@ -107,9 +107,9 @@
 
     <article class="project vertical">
       <div class="frame">
-        <video controls playsinline preload="metadata"
+        <video controls playsinline 
                poster="media/mindset-reel-poster.jpg"
-               src="videos/mindset-reel-vertical.mp4"
+               data-parts="mindset-reel-vertical.mp4:6" preload="none"
                width="720" height="1280"></video>
       </div>
       <div class="meta">
@@ -133,9 +133,9 @@
     <div class="group">
     <article class="project">
       <div class="frame">
-        <video controls playsinline preload="metadata"
+        <video controls playsinline 
                poster="media/green-screen-poster.jpg"
-               src="videos/green-screen-edit.mp4"
+               data-parts="green-screen-edit.mp4:4" preload="none"
                width="1280" height="720"></video>
       </div>
       <div class="meta">
@@ -154,9 +154,9 @@
 
     <article class="project">
       <div class="frame">
-        <video controls playsinline preload="metadata"
+        <video controls playsinline 
                poster="media/editzone-poster.jpg"
-               src="videos/editzone-saas-motion.mp4"
+               data-parts="editzone-saas-motion.mp4:4" preload="none"
                width="1280" height="720"></video>
       </div>
       <div class="meta">
@@ -307,6 +307,32 @@
     els.forEach(function(e,i){e.classList.add('reveal');e.style.transitionDelay=((i%4)*60)+'ms';io.observe(e)});
     setTimeout(function(){els.forEach(function(e){e.classList.add('in')})},6000);
   }
+})();
+</script>
+
+<script>
+(function(){
+  var vids=document.querySelectorAll('video[data-parts]');
+  vids.forEach(function(v){
+    var spec=v.getAttribute('data-parts').split(':'),name=spec[0],n=parseInt(spec[1],10),loading=false,done=false;
+    var wrap=v.parentNode;wrap.style.position='relative';
+    var tag=document.createElement('div');tag.textContent='\u25B6 Tap to play';
+    tag.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:12px 20px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff;font:700 15px Montserrat,sans-serif;pointer-events:none;transition:opacity .3s';
+    wrap.appendChild(tag);
+    function load(){
+      if(loading||done)return;loading=true;tag.textContent='Loading 0%';
+      var got=0,parts=new Array(n);
+      function one(i){return fetch('parts/'+name+'.'+('0'+i).slice(-2)).then(function(r){if(!r.ok)throw 0;return r.arrayBuffer()}).then(function(b){parts[i]=b;got++;tag.textContent='Loading '+Math.round(got/n*100)+'%'})}
+      var idx=[...Array(n).keys()],chain=Promise.resolve(),k=0;
+      var workers=[0,1,2].map(function(){return(function next(){if(k>=n)return Promise.resolve();var i=k++;return one(i).then(next)})()});
+      Promise.all(workers).then(function(){
+        v.src=URL.createObjectURL(new Blob(parts,{type:'video/mp4'}));done=true;tag.style.opacity=0;
+        v.addEventListener('loadeddata',function(){v.play().catch(function(){})},{once:true});v.load();
+      }).catch(function(){loading=false;tag.textContent='Retry \u25B6'});
+    }
+    v.addEventListener('click',function(e){if(!done){e.preventDefault();load()}});
+    v.addEventListener('play',function(){if(!done){v.pause();load()}});
+  });
 })();
 </script>
 </body>
