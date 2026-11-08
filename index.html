@@ -109,7 +109,7 @@
       <div class="frame">
         <video controls playsinline 
                poster="media/mindset-reel-poster.jpg"
-               data-parts="mindset-reel-vertical.mp4:6" preload="none"
+               data-parts="mindset-reel-vertical.mp4:9" data-pre="m" preload="none"
                width="720" height="1280"></video>
       </div>
       <div class="meta">
@@ -322,7 +322,7 @@
     function load(){
       if(loading||done)return;loading=true;tag.textContent='Loading 0%';
       var got=0,parts=new Array(n);
-      function one(i){return fetch('parts/'+name+'.'+('0'+i).slice(-2)).then(function(r){if(!r.ok)throw 0;return r.arrayBuffer()}).then(function(b){parts[i]=b;got++;tag.textContent='Loading '+Math.round(got/n*100)+'%'})}
+      function one(i){return fetch(v.dataset.pre?('parts/m'+('0'+i).slice(-2)+'.'+name):('parts/'+name+'.'+('0'+i).slice(-2))).then(function(r){if(!r.ok)throw 0;return r.arrayBuffer()}).then(function(b){parts[i]=b;got++;tag.textContent='Loading '+Math.round(got/n*100)+'%'})}
       var idx=[...Array(n).keys()],chain=Promise.resolve(),k=0;
       var workers=[0,1,2].map(function(){return(function next(){if(k>=n)return Promise.resolve();var i=k++;return one(i).then(next)})()});
       Promise.all(workers).then(function(){
